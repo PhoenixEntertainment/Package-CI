@@ -17,18 +17,18 @@ jobs:
       uses: ok-nick/setup-aftman@c52e3c91524316f8ca696574d576ea21b7518ec8
     
     - name: Create read auth for private phoenix repositories
-      if: ${{ github.event.repository.private }} == true
+      if: ${{ github.event.repository.private }}
       run: |
         echo "https://phoenixentertainment:${{ secrets.REPOS_READ }}@github.com" > git-credentials
         git config --global credential.helper 'store --file git-credentials'
 
     - name: Create wally auth for public registry
-      if: ${{ github.event.repository.private }} == false
+      if: ${{ ! github.event.repository.private }}
       run: |
         wally login --project-path Server --token ${{ secrets.WALLY_PUBLIC_WRITE }}
     
     - name: Create wally auth for private registry
-      if: ${{ github.event.repository.private }} == true
+      if: ${{ github.event.repository.private }}
       run: |
         wally login --project-path Server --token ${{ secrets.WALLY_PRIVATE_WRITE }}
 
