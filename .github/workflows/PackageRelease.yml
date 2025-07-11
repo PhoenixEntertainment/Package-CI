@@ -2,10 +2,6 @@ name: Package release
 
 on:
   workflow_call:
-    inputs:
-      public:
-        required: true
-        type: boolean
 
 jobs:
   release:
