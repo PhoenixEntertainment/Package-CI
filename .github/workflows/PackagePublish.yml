@@ -1,0 +1,32 @@
+name: Package release
+
+on:
+  workflow_call:
+
+jobs:
+  release:
+    name: Publish system to package registry
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      with:
+        token: ${{ secrets.REPOS_READ }}
+
+    - name: Setup aftman
+      uses: ok-nick/setup-aftman@c52e3c91524316f8ca696574d576ea21b7518ec8
+
+    - name: Create wally auth for public registry
+      if: ${{ ! github.event.repository.private }}
+      run: |
+        wally login --project-path Server --token ${{ secrets.WALLY_PUBLIC_WRITE }}
+    
+    - name: Create wally auth for private registry
+      if: ${{ github.event.repository.private }}
+      run: |
+        wally login --project-path Server --token ${{ secrets.WALLY_PRIVATE_WRITE }}
+
+    - name: Publish package to registry
+      run: |
+        wally publish --project-path Server
+        wally publish --project-path Client
