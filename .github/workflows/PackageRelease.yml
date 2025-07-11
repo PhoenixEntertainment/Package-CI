@@ -63,8 +63,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Temp/${{github.event.repository.name}}.rbxm
-        asset_name: ${{github.event.repository.name}}_${{ github.ref_name }}.rbxm
+        asset_path: Temp/${{github.event.repository.name}}_Server.rbxm
+        asset_name: ${{github.event.repository.name}}_Server_${{ github.ref_name }}.rbxm
         asset_content_type: application/octet-stream
 
     - name: Upload system client component
@@ -73,6 +73,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: Temp/RobloxAvatarSystem_Client.rbxm
-        asset_name: RobloxAvatarSystem_Client_${{ github.ref_name }}.rbxm
+        asset_path: Temp/${{github.event.repository.name}}_Client.rbxm
+        asset_name: ${{github.event.repository.name}}_Client_${{ github.ref_name }}.rbxm
         asset_content_type: application/octet-stream
