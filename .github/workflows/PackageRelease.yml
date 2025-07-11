@@ -30,7 +30,7 @@ jobs:
     - name: Create wally auth for private registry
       if: ${{ github.event.repository.private }}
       run: |
-        wally login --project-path Server --token ${{ secrets.WALLY_PRIVATE_WRITE }}
+        wally login --project-path Server --token ${{ secrets.WALLY_PRIVATE_READ }}
 
     - name: Install dependencies
       run: |
