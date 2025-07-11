@@ -1,0 +1,78 @@
+name: Package release
+
+on:
+  workflow_call:
+    inputs:
+      public:
+        required: true
+        type: boolean
+
+jobs:
+  release:
+    name: Create system release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      with:
+        token: ${{ secrets.REPOS_READ }}
+
+    - name: Setup aftman
+      uses: ok-nick/setup-aftman@c52e3c91524316f8ca696574d576ea21b7518ec8
+    
+    - name: Create read auth for private phoenix repositories
+      if: ${{ github.event.repository.private }} == true
+      run: |
+        echo "https://phoenixentertainment:${{ secrets.REPOS_READ }}@github.com" > git-credentials
+        git config --global credential.helper 'store --file git-credentials'
+
+    - name: Create wally auth for public registry
+      if: ${{ github.event.repository.private }} == false
+      run: |
+        wally login --project-path Server --token ${{ secrets.WALLY_PUBLIC_WRITE }}
+    
+    - name: Create wally auth for private registry
+      if: ${{ github.event.repository.private }} == true
+      run: |
+        wally login --project-path Server --token ${{ secrets.WALLY_PRIVATE_WRITE }}
+
+    - name: Install dependencies
+      run: |
+        wally install --project-path Server/
+        wally install --project-path Client/
+
+    - name: Build system components
+      run: |
+        mkdir Temp
+        rojo build Server/standalone.project.json --output Temp/${{github.event.repository.name}}_Server.rbxm
+        rojo build Client/standalone.project.json --output Temp/${{github.event.repository.name}}_Client.rbxm
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        draft: true
+    
+    - name: Upload system server component
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Temp/${{github.event.repository.name}}.rbxm
+        asset_name: ${{github.event.repository.name}}_${{ github.ref_name }}.rbxm
+        asset_content_type: application/octet-stream
+
+    - name: Upload system client component
+      uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: Temp/RobloxAvatarSystem_Client.rbxm
+        asset_name: RobloxAvatarSystem_Client_${{ github.ref_name }}.rbxm
+        asset_content_type: application/octet-stream
